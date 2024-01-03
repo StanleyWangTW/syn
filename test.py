@@ -1,35 +1,43 @@
 import nibabel as nib
+import numpy as np
 
-from training import utils, plotting, transforms
+from training import plotting
+from tigersyn import run
 
-labels = (0, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 24, 26, 28, 41, 42, 43, 44, 46,
-          47, 49, 50, 51, 52, 53, 54, 58, 60)
-print(len(labels))
 
-label_ff = r'D:\Python_Projects\dataset\synthstrip_iso_reorder\label\fsm_t1_54jc_label_1mm.nii.gz'
-mask = utils.read_nib(nib.load(label_ff))
+def clamp_HU(image, MIN_BOUND=-100, MAX_BOUND=400.0):
+    image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
+    image[image > 1] = 1.
+    image[image < 0] = 0.
+    return image
 
-# label_transforms = transforms.Compose([
-#     transforms.RandomSkullStrip(),
-#     transforms.LinearDeform(),
-#     transforms.NonlinearDeformTio(),
-#     # transforms.RandomCrop()
-# ])
 
-# image_transforms = transforms.Compose([
-#     transforms.GMMSample(),
-#     transforms.RandomBiasField(),
-#     transforms.Rescale(),
-#     transforms.GammaTransform(),
-#     transforms.RandomDownSample()
-# ])
+def min_max_normalization(data):
+    # 計算1%和99%的百分位數
+    min_val = np.percentile(data, 1)
+    max_val = np.percentile(data, 99)
+    print(min_val, max_val)
 
-# mask = label_transforms(mask)
-# image = image_transforms(mask)
-# label = transforms.split_labels(mask, labels)
-# print(label.shape)
-# print(label.unique())
+    # 將數據歸一化到0到1的範圍
+    normalized_data = (data - min_val) / (max_val - min_val)
+    normalized_data[normalized_data > 1] = 1.
+    normalized_data[normalized_data < 0] = 0.
 
-# plotting.show_slices(image[0, 0, ...], (100, 100, 150), 'gray')
-plotting.show_slices(mask[0, 0, ...], (100, 100, 150), cmap=plotting.get_cmap())
-# # plotting.show_labels(label, 150, 6, 6)
+    return normalized_data
+
+
+img = nib.load(r'CT.nii.gz')
+img_clamp = clamp_HU(img.get_fdata())
+# img_clamp = min_max_normalization(img.get_fdata())
+print(img_clamp.max(), img_clamp.min())
+
+out = nib.nifti1.Nifti1Image(img_clamp, img.affine, img.header)
+nib.nifti1.save(out, 'out.nii.gz')
+
+run('s', r'out.nii.gz')
+
+# img = nib.load(r'test_data\sub-032633_ses-030_acq-32channel_run-2_T2w_1mm.nii.gz').get_fdata()
+# plotting.show_slices(image=img)
+
+# img = nib.load(r'out_syn.nii.gz').get_fdata()
+# plotting.show_slices(image=img, cmap=plotting.get_cmap())

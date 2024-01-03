@@ -5,10 +5,15 @@ from matplotlib.colors import ListedColormap
 
 
 # charts plotting
-def show_slices(image, layer, cmap, save=False, path=None):
+def show_slices(image, layer=[], cmap='gray', save=False, path=None):
     '''show Nifti 3D data array. Plot Sagittal Coronal Axial planes'''
+
     if isinstance(image, torch.Tensor):
         image = image.cpu()
+
+    if len(layer) != 3:
+        for i in range(3):
+            layer.append(image.shape[i] // 2)
 
     plt.figure(figsize=(10, 10))
     plt.subplot(131)
@@ -111,7 +116,6 @@ def get_cmap():
     colors = np.array(rgb_colors) / 255.0
     colors = np.zeros([labels[-1] + 1, 3])
     for idx, l in enumerate(labels):
-        print(l)
         colors[l] = rgb_colors[idx]
         colors[l] /= 255.0
 
