@@ -10,6 +10,9 @@ from nilearn.image import reorder_img, resample_img
 class GetData(torch.utils.data.Dataset):
 
     def __init__(self, image_dir='', mask_dir='', mode='both'):
+        '''mode = image/mask/both
+        __getitem__ return {"image": image, "mask": mask}'''
+
         self.mode = mode
 
         self.image_ffs = glob.glob(image_dir)
@@ -17,14 +20,14 @@ class GetData(torch.utils.data.Dataset):
         self.mask_ffs.sort()
         self.image_ffs.sort()
 
-    def __len__(self):
+    def __len__(self) -> int:
         if self.mode == 'image' or self.mode == 'both':
             return len(self.image_ffs)
 
         elif self.mode == 'mask':
             return len(self.mask_ffs)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> dict:
         data = dict()
         if (self.mode == 'image' or self.mode == 'both'):
             data['image'] = nib.load(self.image_ffs[index])
