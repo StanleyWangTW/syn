@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 warnings.filterwarnings("ignore")
 
+
 def resample_voxel(data_nib, voxelsize, target_shape=None, interpolation='continuous'):
     affine = data_nib.affine
     target_affine = affine.copy()
@@ -25,6 +26,7 @@ def resample_voxel(data_nib, voxelsize, target_shape=None, interpolation='contin
                             target_shape=target_shape, interpolation=interpolation)
 
     return new_nib
+
 
 def resample_1mm():
     input_dir = input('input: ')
@@ -50,7 +52,7 @@ def resample_1mm():
 
             input_nib_resp = resample_voxel(input_nib, (1, 1, 1), interpolation=interpolation)
             print(f'resample {input_nib.header.get_zooms()} to {input_nib_resp.header.get_zooms()}')
-            
+
             output_file = join(save_dir, basename(f).replace('.nii', '_1mm.nii'))
             nib.save(input_nib_resp, output_file)
             
@@ -60,6 +62,7 @@ def resample_1mm():
             print('! File open error !')
 
     print('finish')
+
 
 def check_1mm():
     print('Check 1mm')
@@ -75,6 +78,7 @@ def check_1mm():
             return
         
     print('all 1mm')
+
 
 def main():
     mode = input('Resample or Check ? (r/c)')
